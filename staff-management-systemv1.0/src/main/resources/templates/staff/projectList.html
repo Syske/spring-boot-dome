@@ -1,0 +1,436 @@
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<script type="text/javascript" th:src="@{/jquery-form/jquery.form.js}"></script>
+<script type="text/javascript">
+    $(function() {
+        $.ajax({
+            type : "post",
+            url : "/staff/lists",
+            success : function(data) {
+                var dataString = eval(data);
+                var str = null;
+                for(i in dataString) {
+                    var chOpetionadd=$("<option value="+ dataString[i].id +">"+ dataString[i].name +"   -"+ dataString[i].role.name +"</option>")
+                    $(".principal").append(chOpetionadd);
+                }
+                $("#principal").html($(".principal").html());
+
+            }
+        })
+
+    });
+
+      function addProject() {
+        var ajaxFormOption = {
+            type: "post", //提交方式
+            dataType: "json", //数据类型
+            data: $("#addProject").serialize(),//自定义数据参数，视情况添加
+            url: "/project/add", //请求url
+            beforeSerialize: function () {
+                $("#id").val(uuid());
+            },
+
+            success: function (data) { //提交成功的回调函数
+                if (data) {
+                    alert("添加成功");
+                    openPage('/project/list');
+                } else {
+                    alert("添加失败");
+                }
+
+                //console.log($(".app-content").html());
+            },
+            clearForm: true, //提交成功后是否清空表单中的字段值
+            restForm: true, //提交成功后是否重置表单中的字段值，即恢复到页面加载时的状态
+            timeout: 6000
+        };
+        console.log($("#addProject").serialize());
+        $("#addProject").ajaxForm(ajaxFormOption);
+        $("#addProject").submit();
+    }
+
+    function editProject(id) {
+        var formId = "#" + id;
+        console.log(id);
+        console.log(formId);
+        console.log($(formId).serialize());
+        $.ajax({
+            type: "post", //提交方式
+            dataType: "json", //数据类型
+            data: $(formId).serialize(),//自定义数据参数，视情况添加
+            url: "/project/update", //请求url
+            success: function (data) { //提交成功的回调函数
+                if (data) {
+                    alert("编辑成功");
+                    openPage('/project/list');
+                } else {
+                    alert("编辑失败");
+                }
+            }
+        });
+    }
+
+    function change(id, status) {
+        var statusTo = status == 0 ? 1:0 ;
+        $.ajax({
+            type: "post",
+            url: "/project/del",
+            data: {
+                "id": id,
+                "status": statusTo
+            },
+            success: function (data) {
+                if (data)
+                    openPage('/project/list');
+                alert("操作成功");
+            }
+
+        });
+    }
+
+
+    function load(currentPage) {
+        $.ajax({
+            type: "post",
+            url: "/project/list",
+            data: "page=" + currentPage,
+            success: function (data) {
+                $(".app-content").html(data);
+
+            }
+
+        });
+    }
+</script>
+
+<!-- 当前页标题 -->
+<div class="app-title">
+    <div>
+        <h1>
+            <i class="fa fa-dashboard"></i> 员工管理
+        </h1>
+        <p>员工添加、修改、查询、删除等</p>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+    </ul>
+</div>
+
+
+<div class="row">
+
+
+    <!-- 页面内容 -->
+    <div class="col-md-12">
+        <div class="tile">
+            <h3 class="tile-title">项目列表</h3>
+            <p>
+                <button type="button" class="btn btn-primary" data-toggle="modal"
+                        data-target="#myModalAdd">新建
+                </button>
+            </p>
+            <!-- ModalAdd -->
+            <div class="modal" id="myModalAdd" tabindex="-1" role="dialog"
+                 aria-labelledby="myModalLabel">
+
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="myModalLabel">新建项目</h4>
+                            <button type="button" class="close" data-dismiss="modal"
+                                    aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+
+                        </div>
+                        <div class="modal-body">
+                            <form class="form-horizontal" id="addProject" enctype="multipart/form-data">
+                                <input type="hidden" id="id" name="id"> <input
+                                    type="hidden" id="pdate" name="pdate"/>
+                                <div class="form-group">
+                                    <label class="control-label">项目名称</label> <input
+                                        type="text" required="required" class="form-control"
+                                        id="inputname" name="name" placeholder="项目名称">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label">开始时间</label>
+                                    <input
+                                            type="date" required="required" class="form-control"
+                                            id="inpustartTime" name="startTime" placeholder="开始时间">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label">结束时间</label>
+                                    <input
+                                            type="date" required="required" class="form-control"
+                                            id="inpuendTime" name="endTime" placeholder="结束时间">
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label for="budget" class="control-label">预算</label> <input
+                                        type="number" required="required" class="form-control"
+                                        id="budget" name="budget" placeholder="项目预算">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="files" class="control-label col-md-3">项目文件</label>
+                                    <input type="file" required="required" class="form-control"
+                                           id="projectFile" name="projectFile" placeholder="项目文件">
+                                </div>
+                                <div class="form-group">
+                                    <label for="principal" class="control-label col-md-3">项目负责人</label>
+                                    <select class="form-control" name="principal" id="principal"></select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="descr" class="control-label col-md-3">项目描述</label>
+                                    <textarea class="form-control"
+                                             id="descr" name="descr" placeholder="项目描述"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="location" class="control-label col-md-3">项目地址</label>
+                                    <input name="location" class="form-control" placeholder="项目地址"
+                                              id="location">
+                                </div>
+                            </form>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                                    data-dismiss="modal">关闭
+                            </button>
+                            <button type="button" class="btn btn-primary"
+                                    onclick="addProject()" data-dismiss="modal">保存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th><input type="checkbox"></th>
+                                <th>序号</th>
+                                <th>项目名称</th>
+                                <th>项目开始时间</th>
+                                <th>项目结束时间</th>
+                                <th>预算</th>
+                                <th>文件</th>
+                                <th>负责人</th>
+                                <th>描述</th>
+                                <th>项目地址</th>
+                                <th>项目进度</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="project,iterStat : ${pageInfo.list}">
+                                <td><input type="checkbox"></td>
+                                <th scope="row" th:text="${iterStat.count}"></th>
+                                <td th:text="${project.name}"></td>
+                                <td th:text="${project.startTime}"></td>
+                                <td th:text="${project.endTime}"></td>
+                                <td th:text="${project.budget}"></td>
+                                <td><a th:href="${project.files}" th:text="项目文件"></a></td>
+                                <td th:text="${project.staff.name}"></td>
+                                <td th:text="${project.descr}"></td>
+                                <td th:text="${project.location}"></td>
+                                <td th:text="((${project.status} =='0 ')? '已完结': ((${project.status}=='1') ? '进行中':'已延期'))"></td>
+                                <td>
+                                    <button class="btn btn-info" th:onclick="'openModal('+'edit'+${project.id}+')'">编辑
+                                    </button> <!-- Modaledit -->
+                                    <div class="modal" th:id="'edit'+${project.id}"
+                                         tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title" id="myModalLabel">编辑员工信息</h4>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form class="form-horizontal"
+                                                          th:id="'editForm'+${project.id}">
+                                                        <input type="hidden" id="id" name="id"
+                                                               th:value="${project.id}">
+                                                        <div class="form-group">
+                                                            <label for="editname" class="control-label">项目名称</label>
+                                                            <input type="text" required="required"
+                                                                   class="form-control" id="inputname" name="name"
+                                                                   placeholder="姓名" th:value="${project.name}">
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <label for="editstartTime" class="control-label">开始时间</label>
+                                                            <input type="date" required="required"
+                                                                   class="form-control" id="inputage" name="startTime"
+                                                                   placeholder="开始时间" th:value="${project.startTime}">
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <label for="editendTime" class="control-label">结束时间</label>
+                                                            <input type="date" required="required"
+                                                                   class="form-control" id="inputendTime" name="endTime"
+                                                                   placeholder="结束时间" th:value="${project.endTime}">
+                                                        </div>
+
+
+                                                            <div class="form-group">
+                                                                <label for="budget"
+                                                                       class="control-label">预算</label>
+                                                                <input type="number" required="required"
+                                                                       class="form-control" id="budget"
+                                                                       name="budget" placeholder="项目预算"
+                                                                       th:value="${project.budget}">
+                                                            </div>
+
+                                                        <div class="form-group">
+                                                                <label for="files"
+                                                                       class="control-label">文件</label>
+                                                                <input type="file" required="required"
+                                                                       class="form-control" id="files"
+                                                                       name="files" placeholder="项目文件"
+                                                                       th:value="${project.files}">
+                                                            </div>
+
+                                                        <div class="form-group">
+                                                            <label for="principal"
+                                                                   class="control-label">负责人</label>
+                                                            <select type="number" required="required"
+                                                                   class="form-control principal" id="editprincipal"
+                                                                   name="principal"
+                                                                    ><option th:value="${project.staff.id}" th:text="${project.staff.name}"></option></select>
+                                                        </div>
+
+                                                            <div class="form-group">
+                                                                <label for="descr"
+                                                                       class="control-label">描述</label>
+                                                                <textarea required="required"
+                                                                          class="form-control" id="descr"
+                                                                          name="descr" placeholder="备注……"
+                                                                          th:text="${project.descr}"></textarea>
+                                                            </div>
+
+                                                        <div class="form-group">
+                                                            <label for="location"
+                                                                   class="control-label">项目地址</label>
+                                                            <select type="text" required="required"
+                                                                    class="form-control" id="editlocation"
+                                                                    name="location"
+                                                                    th:value="${project.location}"></select>
+                                                        </div>
+                                                    </form>
+
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default"
+                                                            data-dismiss="modal">关闭
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary"
+                                                            th:onclick="'editProject('+'\''+'editForm'+${project.id}+'\''+')'"
+                                                            data-dismiss="modal">保存
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+                                    <!--<button th:class="${project.status == '0' ? 'btn btn-success' : 'btn btn-warning'}"-->
+                                            <!--th:onclick="'openModal('+'change'+${project.id}+')'"-->
+                                            <!--th:text="${project.status == '0' ? '复案':'结案'}">-->
+                                    <!--</button>-->
+                                    <!--<div class="modal" th:id="'change'+${project.id}" tabindex="-1"-->
+                                         <!--role="dialog" aria-labelledby="myModalLabel">-->
+                                        <!--<div class="modal-dialog" role="document">-->
+                                            <!--<div class="modal-content">-->
+                                                <!--<div class="modal-header">-->
+                                                    <!--<h4 class="modal-title" id="myModalLabel"-->
+                                                        <!--th:text="确认+${project.status == 1?'复案':'结案'}+？">-->
+                                                    <!--</h4>-->
+                                                    <!--<button type="button" class="close"-->
+                                                            <!--data-dismiss="modal" aria-label="Close">-->
+                                                        <!--<span aria-hidden="true">&times;</span>-->
+                                                    <!--</button>-->
+
+                                                <!--</div>-->
+                                                <!--<div class="modal-footer">-->
+                                                    <!--<button type="button" class="btn btn-info"-->
+                                                            <!--data-dismiss="modal">关闭-->
+                                                    <!--</button>-->
+                                                    <!--<button type="button" data-dismiss="modal"-->
+                                                            <!--class="btn btn-danger"-->
+                                                            <!--th:onclick="'change('+'\''+ ${project.id} + '\'' +','+'\''+${project.status}+'\''+')'">-->
+                                                        <!--确认-->
+                                                    <!--</button>-->
+                                                <!--</div>-->
+                                            <!--</div>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
+                                </td>
+                            </tr>
+
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 col-md-5">
+                    <div class="dataTables_info" id="sampleTable_info" role="status"
+                         aria-live="polite"
+                         th:text="'共'+${pageInfo.total}+'条数据，共'+${pageInfo.pages}+'页，当前第'+${pageInfo.pageNum}+'页'"></div>
+                </div>
+                <div class="col-sm-12 col-md-7">
+                    <div class="dataTables_paginate paging_simple_numbers"
+                         id="sampleTable_paginate">
+                        <ul class="pagination">
+                            <li th:class="'paginate_button page-item previous '+${pageInfo.pageNum-1 > 0 ? '':'disabled'}"
+                        id="sampleTable_previous">
+                        <a href="javascript:void(0)"
+                           aria-controls="sampleTable" th:data-dt-idx="${pageInfo.prePage}" tabindex="0"
+                           class="page-link"
+                           th:onclick="'load('+'\''+${pageInfo.pageNum-1 >0 ? pageInfo.pageNum-1 : pageInfo.pageNum}+'\''+')'">Previous</a>
+                        </li>
+                            <!--<li th:class="'paginate_button page-item  '+${pageInfo.pageNum == page.count ? 'active' : ''}"-->
+                                <!--th:onclick="'load('+'\''+${projectStat.count}+'\''+')'"  th:each="page : ${pageInfo.pages}"><a href="javascript:void(0)"-->
+                                                                                                                              <!--aria-controls="sampleTable"-->
+                                                                                                                              <!--th:data-dt-idx="${page.count}"-->
+                                                                                                                              <!--tabindex="0"-->
+                                                                                                                              <!--class="page-link"-->
+                                                                                                                              <!--th:text="${page.count}"></a>-->
+                            <!--</li>-->
+                            <li th:class="'paginate_button page-item next '+${pageInfo.pageNum < pageInfo.pages ? '':'disabled'}"
+                                id="sampleTable_previous">
+                                <a href="javascript:void(0)"
+                                   aria-controls="sampleTable" th:data-dt-idx="${pageInfo.nextPage}" tabindex="0"
+                                   class="page-link"
+                                   th:onclick="'load('+'\''+${pageInfo.nextPage<pageInfo.pages ? pageInfo.nextPage:pageInfo.pages}+'\''+')'">Next</a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+</html>

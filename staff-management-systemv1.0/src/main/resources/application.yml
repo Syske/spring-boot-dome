@@ -1,0 +1,74 @@
+#阿里巴巴druid数据源配置
+spring:
+  datasource:
+    druid:
+            #监控统计拦截的filters
+            filters: stat
+            driver-class-name: com.mysql.jdbc.Driver
+            #基本属性
+            url: jdbc:mysql://localhost:3306/staff?characterEncoding=UTF-8&amp;useSSL=false
+            username: root
+            password: root
+            #配置初始化大小/最小/最大
+            initial-size: 1
+            min-idle: 1
+            max-active: 20
+            #获取连接等待超时时间
+            max-wait: 60000
+            #间隔多久进行一次检测，检测需要关闭的空闲连接
+            time-between-eviction-runs-millis: 60000
+            #一个连接在池中最小生存的时间
+            min-evictable-idle-time-millis: 300000
+            validation-query: SELECT 'x'
+            #空闲连接是否被回收
+            test-while-idle: true
+            #申请连接时是否检测有效性
+            test-on-borrow: false
+            #归还连接时是否检测有效性
+            test-on-return: false
+  #jedis和lettuce都是Java连接redis的客户端.
+  thymeleaf:
+    cache: false
+#################redis基础配置#################
+  redis:
+    database: 5
+    host: localhost
+    password: root
+    port: 7001
+    #连接超时时间 单位 ms 毫秒
+
+#################redis线程池设置#################
+
+# 连接池中的最大空闲连接，默认值也是8。
+#spring.redis.pool.max-idle:500
+#连接池中的最小空闲连接，默认值也是0。
+#spring.redis.pool.min-idle=50
+# 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
+#spring.redis.pool.max-active=2000
+# 等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException
+#spring.redis.pool.max-wait=1000
+
+#################redis哨兵设置#################
+# Redis服务器master的名字
+#spring.redis.sentinel.master=master8026
+# redis-sentinel的配置地址和端口
+#spring.redis.sentinel.nodes=10.189.80.25:26379,10.189.80.26:26379,10.189.80.27:26378
+mybatis:
+  #mpper路径，这里需要根据你具体的路径配置
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  #mybatis配置文件路径，这里需要根据你具体的路径配置
+  config-location: classpath:mybatis/mybatis-config.xml
+  #MybatisMapper映射路径
+  type-aliases-package: io.github.syske.staffmanagementsystem.entity
+mapper:
+    mappers:
+        - tk.mybatis.springboot.util.MyMapper
+    not-empty: false
+    identity: MYSQL
+
+# 分页插件配置
+pagehelper:
+    helperDialect: mysql
+    reasonable: true
+    supportMethodsArguments: true
+    params: count=countSql
