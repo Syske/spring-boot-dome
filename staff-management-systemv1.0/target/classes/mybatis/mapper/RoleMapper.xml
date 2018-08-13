@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.github.syske.staffmanagementsystem.dao.RoleDAO">
+	<resultMap type="role" id="resultRoleList">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="descr" column="descr" />
+		<result property="status" column="status" />
+		<result property="comments" column="comments" />
+	</resultMap>
+
+	<resultMap type="role" id="resultRoleListCoverStaff"
+		extends="resultRoleList">
+		<collection property="staffList" ofType="staff">
+			<id property="id" column="id" />
+			<result property="name" column="sname" />
+			<result property="age" column="sage" />
+			<result property="sex" column="ssex" />
+			<result property="address" column="saddress" />
+			<result property="phoneNum" column="sphoneNum" />
+			<result property="censusRegister" column="scensusRegister" />
+			<result property="comments" column="scomments" />
+			<result property="status" column="sstatus" />
+			<association property="postion" javaType="role">
+				<id property="id" column="rid" />
+				<result property="name" column="rname" />
+				<result property="descr" column="rdescr" />
+				<result property="status" column="rstatus" />
+				<result property="comments" column="rcomments" />
+			</association>
+		</collection>
+
+	</resultMap>
+
+
+	<select id="getRoleById" parameterType="String">
+		select *
+		from role
+		where id=#{id}
+	</select>
+
+	<select id="getRoleByUser" parameterType="String">
+		select *
+		from role
+		where name=#{name}
+	</select>
+
+	<select id="listRoles" resultType="role">
+		select *
+		from role
+		<where>
+			status = '1'
+		</where>
+	</select>
+
+	<update id="updateRole">
+		update role
+		<set>
+			<if test="name != null">name = #{name},</if>
+			<if test="descr != null">descr=#{descr},</if>
+			<if test="status != null">status=#{status},</if>
+			<if test="comments != null">comments=#{comments},</if>
+
+		</set>
+		<if test="id != null">
+			<where>
+				id=#{id}
+			</where>
+		</if>
+	</update>
+
+	<insert id="insertRole">
+		insert into role
+		(id,name,descr,comments)
+		values
+		(#{id},#{name},#{descr},#{comments})
+	</insert>
+
+	<delete id="deleteRole" parameterType="String">
+		DELETE
+		FROM role
+		WHERE id=#{id}
+
+	</delete>
+
+</mapper>
